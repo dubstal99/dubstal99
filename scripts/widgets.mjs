@@ -8,10 +8,10 @@ const BLOG_URL = 'https://lioner.hu/blog/szerzo/farkas-peter';
 const README = process.env.README_PATH || 'README.md';
 const OUT_DIR = process.env.OUT_DIR || 'dist';
 
-// Amiket életben tartunk, és mióta. Az év a lioner.hu-n is szereplő adat.
+// A kártya felső sorai. Konkrét ügyfélrendszert szándékosan nem nevezünk meg.
 const SYSTEMS = [
     { name: 'Lioner', note: 'a cég', since: 2021 },
-    { name: 'TrustPhone', note: 'ERP és CRM, 20+ felhasználó', since: 2021 },
+    { name: 'Ügyfélrendszerek', note: 'karbantartás és továbbfejlesztés', since: 2021 },
 ];
 
 const THEMES = {

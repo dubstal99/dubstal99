@@ -13,26 +13,15 @@ A [Lioner](https://lioner.hu) egyik alapítója. Kristóffal ([@adamkristoflione
 
 🦁 [lioner.hu](https://lioner.hu) · ✍️ [Blog](https://lioner.hu/blog/szerzo/farkas-peter) · 💼 [LinkedIn](https://www.linkedin.com/in/farkasp%C3%A9ter/) · 👤 [Bemutatkozás](https://lioner.hu/rolunk/farkas-peter)
 
-### Rendszerek, amiket életben tartunk
-
-| | Rendszer | Mi ez | Mióta |
-| :---: | --- | --- | --- |
-| 🟢 | **TrustPhone** | Webshopnak indult, mára 20+ felhasználós ERP és CRM lett belőle: készlet, felvásárlás, szerviz és értékesítés egy helyen. Saját MCP-szerverén keresztül Claude-ból is lehet tőle kérdezni, például hogy melyik telefont mennyiért érdemes felvásárolni. | 2021 óta |
-| 🟢 | **Lioner ERP** | A saját rendszerünk, ezen fut az egész cég: CRM, projektek, időmérés, számlázás, árajánlatok, automatizációk. Három AI-munkatárs is ebben dolgozik velünk. | napi használatban |
-| 🟢 | **PremioWebshop** | Egy hőszigetelés-gyártó B2B és B2C webáruháza. Négy korábbi oldaluk volt, ezekből lett egy. | élesben |
-| 🟢 | **[CityFox](https://cityfox.hu)** | Telefonon játszható városi kalandjáték, saját valós idejű játékmotorral. CityRoom néven 1. helyet ért az MVM Edison 2022-n. | élesben |
-| 🟢 | **Átvett projektek** | Félbemaradt vagy gazdátlanná vált rendszerek, amiket átvettünk, rendbe tettünk, és azóta mi visszük tovább. Erről [itt írtam](https://lioner.hu/blog/eltunt-a-webfejlesztod-mit-csinalj) bővebben. | folyamatosan |
-| ⚪ | **RUNaway** | QR-kódos nevezési rendszer futóversenyekhez. | 2020-2021, lezárva |
-
-A többi közös munkánk Kristóffal: [lioner.hu/referenciak](https://lioner.hu/referenciak)
-
 ### Mire szoktak hívni
 
 - Egyedi ERP vagy CRM, ha egy cég kinőtte az Excelt, és a dobozos szoftverek sem illenek rá
 - Webshop, ami több egy kosárnál: B2B és B2C egyben, integrációkkal (SimplePay, Billingo, GLS)
 - Valós idejű dolgok Socket.io-val, a játékmotortól az élő admin felületekig
 - Chatbot a cég belső dokumentumaira, termékajánló motor webshopba
-- Projekt átvétele, ha eltűnt a fejlesztő: megnézzük, menthető-e, és ha igen, rendbe tesszük
+- Projekt átvétele, ha eltűnt a fejlesztő: megnézzük, menthető-e, és ha igen, rendbe tesszük ([erről itt írtam](https://lioner.hu/blog/eltunt-a-webfejlesztod-mit-csinalj))
+
+A közös munkáink Kristóffal: [lioner.hu/referenciak](https://lioner.hu/referenciak)
 
 ### Amivel dolgozom
 
@@ -95,11 +84,6 @@ Az összes cikkem: [lioner.hu/blog/szerzo/farkas-peter](https://lioner.hu/blog/s
 ## [2.0.0] 2021
 ### Hozzáadva
 - Kristóffal megalapítjuk a Lionert
-- elindul a TrustPhone, azóta is fejlesztjük
-
-## [1.1.0] 2020
-### Hozzáadva
-- RUNaway: QR-kódos nevezési rendszer futóversenyekhez
 
 ## [1.0.0] 2019
 ### Hozzáadva
