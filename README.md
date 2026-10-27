@@ -61,7 +61,7 @@ A közös tudás a kedvencem: ha egy ügynök rájön valamire (egy hiba gyöker
 
 ### Amivel dolgozom
 
-| | |
+| Terület | Eszközök |
 | --- | --- |
 | Backend | ![PHP](https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white) ![Laravel](https://img.shields.io/badge/Laravel-FF2D20?style=flat-square&logo=laravel&logoColor=white) ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white) ![Express](https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white) |
 | Frontend | ![Vue.js](https://img.shields.io/badge/Vue.js-4FC08D?style=flat-square&logo=vuedotjs&logoColor=white) ![Livewire](https://img.shields.io/badge/Livewire-4E56A6?style=flat-square&logo=livewire&logoColor=white) ![Bootstrap](https://img.shields.io/badge/Bootstrap_5-7952B3?style=flat-square&logo=bootstrap&logoColor=white) |
@@ -76,12 +76,7 @@ A közös tudás a kedvencem: ha egy ügynök rájön valamire (egy hiba gyöker
   <img alt="Rendszerállapot-kártya: üzemidő és az elmúlt 90 nap hozzájárulásai" src="https://raw.githubusercontent.com/dubstal99/dubstal99/output/status-light.svg">
 </picture>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/dubstal99/dubstal99/output/profile-night-rainbow.svg">
-  <img alt="Az elmúlt egy év hozzájárulásai 3D-ben" src="https://raw.githubusercontent.com/dubstal99/dubstal99/output/profile-season-animate.svg">
-</picture>
-
-Nyilvános repóm kevés, mert szinte minden ügyfélrendszer, amin dolgozom, privát. A fenti számok viszont a privát munkát is tartalmazzák, csak név nélkül.
+Nyilvános repóm kevés, mert szinte minden ügyfélrendszer, amin dolgozom, privát. A fenti kártya és a lenti zöld grafikon viszont a privát munkát is mutatja, csak név nélkül.
 
 ### Írásaim
 
