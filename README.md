@@ -26,31 +26,6 @@ A [Lioner](https://lioner.hu) egyik alapítója. Kristóffal ([@adamkristoflione
 
 A többi közös munkánk Kristóffal: [lioner.hu/referenciak](https://lioner.hu/referenciak)
 
-### Így áll össze a Lioner ERP
-
-Ez az a rendszer, amin a napjaink nagy része telik. Az AI-munkatársak MCP-szervereken keresztül ugyanazokat az adatokat látják, mint mi, de ami az ügyfélhez kimegy vagy élesbe kerül, azt mindig valaki közülünk hagyja jóvá.
-
-```mermaid
-flowchart LR
-    subgraph ERP["Lioner ERP · Laravel"]
-        direction TB
-        CRM["CRM és értékesítés"] --> PRJ["Projektek és feladatok"]
-        PRJ --> IDO["Időmérés, Planner"]
-        PRJ --> SZ["Számlázás, árajánlatok"]
-        AUT["Automatizációk<br/>kiváltó, feltétel, akció"] -.-> PRJ
-    end
-    MAIL["Bejövő levelek"] --> AI
-    AI["AI-munkatársak<br/>Claude"] <-->|MCP| ERP
-    AI <--> TUD[("Közös tudás<br/>amit az ügynökök tanultak")]
-    AI --> PR["Pull request"]
-    AI --> LEV["Levélpiszkozat"]
-    PR --> EMBER{"Ember jóváhagyja"}
-    LEV --> EMBER
-    EMBER --> KI["Élesbe vagy az ügyfélhez"]
-```
-
-A közös tudás a kedvencem: ha egy ügynök rájön valamire (egy hiba gyökerére, egy csapdára), felírja, és a következő futásnál a többiek is látják. A gépemen futó Claude Code is ebből dolgozik, úgyhogy amit egyszer kiderítettünk, azt nem kell kétszer.
-
 ### Mire szoktak hívni
 
 - Egyedi ERP vagy CRM, ha egy cég kinőtte az Excelt, és a dobozos szoftverek sem illenek rá
