@@ -33,7 +33,7 @@ A közös munkáink Kristóffal: [lioner.hu/referenciak](https://lioner.hu/refer
 | Adat és üzemeltetés | ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat-square&logo=mysql&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/Git_alapú_deploy-2088FF?style=flat-square&logo=githubactions&logoColor=white) |
 | AI | ![Claude Code](https://img.shields.io/badge/Claude_Code-D97757?style=flat-square&logo=claude&logoColor=white) ![MCP](https://img.shields.io/badge/MCP_szerverek-6D3FE0?style=flat-square) |
 
-### Rendszerállapot
+### Aktivitás
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/dubstal99/dubstal99/output/status-dark.svg">

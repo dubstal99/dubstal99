@@ -1,4 +1,4 @@
-// Profil-widgetek: rendszerállapot-kártya (világos és sötét) és a README blog-listája.
+// Profil-widgetek: Lioner-arculatú rendszerállapot-kártya (világos és sötét) és a README blog-listája.
 // Futtatás: GITHUB_TOKEN=... GH_USER=dubstal99 node scripts/widgets.mjs
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
@@ -7,26 +7,29 @@ const TOKEN = process.env.GITHUB_TOKEN;
 const BLOG_URL = 'https://lioner.hu/blog/szerzo/farkas-peter';
 const README = process.env.README_PATH || 'README.md';
 const OUT_DIR = process.env.OUT_DIR || 'dist';
+const FOUNDED = 2021;
 
-// A kártya felső sorai. Konkrét ügyfélrendszert szándékosan nem nevezünk meg.
-const SYSTEMS = [
-    { name: 'Lioner', note: 'a cég', since: 2021 },
-    { name: 'Ügyfélrendszerek', note: 'karbantartás és továbbfejlesztés', since: 2021 },
-];
-
+// A Lioner arculati színei (navy #170F2B, lila #7861A8, világos kártya #F0F0EF).
 const THEMES = {
-    light: { bg: '#ffffff', border: '#d0d7de', text: '#1f2328', muted: '#656d76', faint: '#eaeef2', ok: '#1a7f37', bar: ['#eaeef2', '#c9b8f5', '#9f80ee', '#7b52e0', '#5b2fc4'] },
-    dark: { bg: '#0d1117', border: '#30363d', text: '#e6edf3', muted: '#8b949e', faint: '#21262d', ok: '#3fb950', bar: ['#21262d', '#3b2a73', '#5a3fb0', '#7d5ce6', '#a78bfa'] },
+    light: {
+        bg: '#FFFFFF', surface: '#F0F0EF', border: '#E2DEEA', text: '#170F2B', muted: '#5E5577',
+        purple: '#7861A8', line: '#7861A8', grid: '#E2DEEA', logoDark: '#170F2B',
+    },
+    dark: {
+        bg: '#170F2B', surface: '#221A3D', border: '#342A58', text: '#FFFFFF', muted: '#B7AED0',
+        purple: '#7861A8', line: '#A795D6', grid: '#2E2550', logoDark: '#FFFFFF',
+    },
 };
-const LEVEL = { NONE: 0, FIRST_QUARTILE: 1, SECOND_QUARTILE: 2, THIRD_QUARTILE: 3, FOURTH_QUARTILE: 4 };
 
-async function fetchDays() {
+const MONTHS = ['jan', 'febr', 'márc', 'ápr', 'máj', 'jún', 'júl', 'aug', 'szept', 'okt', 'nov', 'dec'];
+
+async function fetchCalendar() {
     const query = `query($login: String!) {
         user(login: $login) {
             contributionsCollection {
                 contributionCalendar {
                     totalContributions
-                    weeks { contributionDays { date contributionCount contributionLevel } }
+                    weeks { contributionDays { date contributionCount } }
                 }
             }
         }
@@ -39,12 +42,12 @@ async function fetchDays() {
     const json = await res.json();
     if (json.errors) throw new Error(JSON.stringify(json.errors));
     const cal = json.data.user.contributionsCollection.contributionCalendar;
-    return { total: cal.totalContributions, days: cal.weeks.flatMap(w => w.contributionDays) };
+    return { total: cal.totalContributions, weeks: cal.weeks.map(w => w.contributionDays) };
 }
 
-function stats({ total, days }) {
+function stats({ total, weeks }) {
     const today = new Date().toISOString().slice(0, 10);
-    const past = days.filter(d => d.date <= today);
+    const past = weeks.flat().filter(d => d.date <= today);
     const sum = list => list.reduce((s, d) => s + d.contributionCount, 0);
 
     let longest = 0, run = 0;
@@ -52,16 +55,16 @@ function stats({ total, days }) {
         run = d.contributionCount > 0 ? run + 1 : 0;
         longest = Math.max(longest, run);
     }
-    const active = past.filter(d => d.contributionCount > 0).length;
 
     return {
         today,
         year: Number(today.slice(0, 4)),
         total,
         last30: sum(past.slice(-30)),
-        activePct: Math.round((active / past.length) * 100),
+        activePct: Math.round((past.filter(d => d.contributionCount > 0).length / past.length) * 100),
         longest,
-        last90: past.slice(-90),
+        // Csak a lezárt hetek, különben a folyamatban lévő hét mindig zuhanásnak látszik.
+        weekly: weeks.filter(w => w.length === 7 && w[6].date < today).map(w => ({ start: w[0].date, count: sum(w) })),
     };
 }
 
@@ -82,59 +85,118 @@ function decodeEntities(s) {
 }
 
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const num = n => n.toLocaleString('hu-HU').replace(/\s/g, ' ');
+const num = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
-// Státuszoldal-kártya: a rendszerek "üzemideje", alatta 90 oszlop, ahogy a státuszoldalakon,
-// csak itt minden oszlop egy nap hozzájárulása.
-function statusSvg(st, t) {
-    const W = 760, H = 292;
-    const font = "font-family='-apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif'";
-    const mono = "font-family='ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'";
+// Catmull-Rom görbe Bézier-szakaszokra bontva, hogy a heti görbe ne legyen szögletes.
+function smoothPath(pts, top, bottom) {
+    const clamp = y => Math.min(bottom, Math.max(top, y));
+    let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+        const [p0, p1, p2, p3] = [pts[i - 1] || pts[i], pts[i], pts[i + 1], pts[i + 2] || pts[i + 1]];
+        const c1 = [p1[0] + (p2[0] - p0[0]) / 6, clamp(p1[1] + (p2[1] - p0[1]) / 6)];
+        const c2 = [p2[0] - (p3[0] - p1[0]) / 6, clamp(p2[1] - (p3[1] - p1[1]) / 6)];
+        d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+    }
+    return d;
+}
 
-    let y = 78;
-    const rows = SYSTEMS.map(s => {
-        const years = st.year - s.since;
-        const row = `<circle cx='34' cy='${y - 5}' r='6' fill='${t.ok}'/>`
-            + `<text x='50' y='${y}' ${font} font-size='15' font-weight='600' fill='${t.text}'>${esc(s.name)}</text>`
-            + `<text x='${50 + s.name.length * 9 + 12}' y='${y}' ${font} font-size='13' fill='${t.muted}'>${esc(s.note)}</text>`
-            + `<text x='${W - 28}' y='${y}' ${font} font-size='13' fill='${t.ok}' text-anchor='end'>üzemel ${s.since} óta · ${years}. éve</text>`;
-        y += 30;
-        return row;
+function statusSvg(st, t, assets) {
+    const W = 840, H = 400;
+    const fontCss = Object.entries(assets.fonts)
+        .map(([family, b64]) => `@font-face{font-family:'${family}';src:url(data:font/woff2;base64,${b64}) format('woff2');}`)
+        .join('');
+    const logo = assets.logo.replace(/class="st0"/g, `fill="${t.logoDark}"`).replace(/class="st1"/g, `fill="${t.purple}"`);
+
+    // Heti görbe az elmúlt egy évre.
+    const cx = 336, cy = 104, cw = 472, ch = 120;
+    const max = Math.max(...st.weekly.map(w => w.count), 1);
+    const pts = st.weekly.map((w, i) => [cx + (i / (st.weekly.length - 1)) * cw, cy + ch - (w.count / max) * ch]);
+    const line = smoothPath(pts, cy, cy + ch);
+    const area = `${line} L${cx + cw},${cy + ch} L${cx},${cy + ch} Z`;
+    const peak = st.weekly.findIndex(w => w.count === max);
+    const last = pts[pts.length - 1];
+
+    let lastMonth = -1;
+    const monthLabels = st.weekly.map((w, i) => {
+        const m = Number(w.start.slice(5, 7)) - 1;
+        if (m === lastMonth || i === 0 || i > st.weekly.length - 3) { lastMonth = m; return ''; }
+        lastMonth = m;
+        return `<text x='${pts[i][0].toFixed(1)}' y='${cy + ch + 20}' class='p' font-size='10' fill='${t.muted}' text-anchor='middle'>${MONTHS[m]}</text>`;
     }).join('');
 
-    const barTop = 150, barH = 40, gap = 2;
-    const barW = (W - 56 - gap * 89) / 90;
-    const bars = st.last90.map((d, i) => {
-        const lvl = LEVEL[d.contributionLevel] ?? 0;
-        return `<rect x='${(28 + i * (barW + gap)).toFixed(2)}' y='${barTop}' width='${barW.toFixed(2)}' height='${barH}' rx='2' fill='${t.bar[lvl]}'><title>${d.date}: ${d.contributionCount}</title></rect>`;
-    }).join('');
-
-    const facts = [
-        [num(st.total), 'hozzájárulás az elmúlt évben'],
+    const tiles = [
         [num(st.last30), 'az elmúlt 30 napban'],
-        [`${st.activePct}%`, 'aktív nap'],
+        [`${st.activePct}%`, 'a napoknak aktív'],
         [`${st.longest} nap`, 'leghosszabb sorozat'],
+        [`${st.year - FOUNDED}. éve`, `üzemel a Lioner, ${FOUNDED} óta`],
     ];
-    const colW = (W - 56) / facts.length;
-    const factSvg = facts.map(([v, k], i) => {
-        const x = 28 + i * colW;
-        return `<text x='${x}' y='246' ${font} font-size='20' font-weight='700' fill='${t.text}'>${esc(v)}</text>`
-            + `<text x='${x}' y='266' ${font} font-size='12' fill='${t.muted}'>${esc(k)}</text>`;
+    const tw = (W - 64 - 3 * 16) / 4;
+    const tileSvg = tiles.map(([v, k], i) => {
+        const x = 32 + i * (tw + 16);
+        return `<rect x='${x}' y='274' width='${tw}' height='78' rx='14' fill='${t.surface}' stroke='${t.border}'/>`
+            + `<rect x='${x + 18}' y='292' width='22' height='4' rx='2' fill='${t.purple}'/>`
+            + `<text x='${x + 18}' y='326' class='m' font-size='22' fill='${t.text}'>${esc(v)}</text>`
+            + `<text x='${x + 18}' y='343' class='p' font-size='10.5' fill='${t.muted}'>${esc(k)}</text>`;
     }).join('');
+
+    const gridLines = [0, 0.5, 1].map(f => `<line x1='${cx}' x2='${cx + cw}' y1='${(cy + ch * f).toFixed(1)}' y2='${(cy + ch * f).toFixed(1)}' stroke='${t.grid}' stroke-dasharray='3 5'/>`).join('');
 
     return `<svg xmlns='http://www.w3.org/2000/svg' width='${W}' height='${H}' viewBox='0 0 ${W} ${H}' role='img' aria-label='Farkas Péter rendszerállapot-kártyája: ${num(st.total)} hozzájárulás az elmúlt évben'>
-<rect x='0.5' y='0.5' width='${W - 1}' height='${H - 1}' rx='12' fill='${t.bg}' stroke='${t.border}'/>
-<text x='28' y='38' ${font} font-size='16' font-weight='700' fill='${t.text}'>Rendszerállapot</text>
-<text x='${W - 28}' y='38' ${mono} font-size='11' fill='${t.muted}' text-anchor='end'>frissítve: ${st.today}</text>
-${rows}
-<text x='28' y='${barTop - 10}' ${font} font-size='12' fill='${t.muted}'>Hozzájárulások, elmúlt 90 nap</text>
-${bars}
-<text x='28' y='${barTop + barH + 16}' ${mono} font-size='10' fill='${t.muted}'>90 napja</text>
-<text x='${W - 28}' y='${barTop + barH + 16}' ${mono} font-size='10' fill='${t.muted}' text-anchor='end'>ma</text>
-<line x1='28' y1='214' x2='${W - 28}' y2='214' stroke='${t.faint}'/>
-${factSvg}
+<style>${fontCss}
+.m{font-family:'Montserrat',-apple-system,'Segoe UI',sans-serif;font-weight:700}
+.pb{font-family:'PoppinsB',-apple-system,'Segoe UI',sans-serif;font-weight:700}
+.p{font-family:'Poppins',-apple-system,'Segoe UI',sans-serif}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 2.4s ease-out forwards}
+.fade{opacity:0;animation:fade 1.2s ease-out .8s forwards}
+.pulse{transform-origin:${last[0].toFixed(1)}px ${last[1].toFixed(1)}px;animation:pulse 2.2s ease-out 2.4s infinite}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fade{to{opacity:1}}
+@keyframes pulse{0%{transform:scale(1);opacity:.6}100%{transform:scale(3.2);opacity:0}}
+</style>
+<defs>
+<linearGradient id='fill' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='${t.purple}' stop-opacity='.55'/><stop offset='1' stop-color='${t.purple}' stop-opacity='0'/></linearGradient>
+<radialGradient id='glow' cx='1' cy='0' r='1'><stop offset='0' stop-color='${t.purple}' stop-opacity='.22'/><stop offset='1' stop-color='${t.purple}' stop-opacity='0'/></radialGradient>
+</defs>
+<rect x='0.5' y='0.5' width='${W - 1}' height='${H - 1}' rx='20' fill='${t.bg}' stroke='${t.border}'/>
+<rect x='0.5' y='0.5' width='${W - 1}' height='${H - 1}' rx='20' fill='url(#glow)'/>
+
+<svg x='32' y='26' width='86' height='32' viewBox='92.01 174.5 657.86 246.27'>${logo}</svg>
+<line x1='134' y1='30' x2='134' y2='54' stroke='${t.border}'/>
+<text x='150' y='47' class='pb' font-size='11' letter-spacing='2.2' fill='${t.purple}'>RENDSZERÁLLAPOT</text>
+
+<rect x='${W - 232}' y='27' width='200' height='30' rx='15' fill='${t.purple}'/>
+<circle cx='${W - 212}' cy='42' r='4' fill='#FFFFFF'><animate attributeName='opacity' values='1;.3;1' dur='2s' repeatCount='indefinite'/></circle>
+<text x='${W - 200}' y='46.5' class='pb' font-size='10' letter-spacing='1.2' fill='#FFFFFF'>MINDEN RENDSZER ÜZEMEL</text>
+
+<text x='32' y='112' class='pb' font-size='10.5' letter-spacing='2' fill='${t.purple}'>AZ ELMÚLT 12 HÓNAPBAN</text>
+<text x='30' y='172' class='m' font-size='56' fill='${t.text}'>${num(st.total)}</text>
+<text x='32' y='200' class='p' font-size='13' fill='${t.muted}'>hozzájárulás GitHubon,</text>
+<text x='32' y='219' class='p' font-size='13' fill='${t.muted}'>a privát ügyfélmunkával együtt</text>
+
+<text x='${cx}' y='${cy - 14}' class='p' font-size='11' fill='${t.muted}'>Heti aktivitás</text>
+<text x='${cx + cw}' y='${cy - 14}' class='p' font-size='11' fill='${t.muted}' text-anchor='end'>csúcs: ${num(max)} / hét</text>
+${gridLines}
+<path d='${area}' fill='url(#fill)' class='fade'/>
+<path d='${line}' fill='none' stroke='${t.line}' stroke-width='2.5' stroke-linecap='round' pathLength='1' class='draw'/>
+<circle cx='${pts[peak][0].toFixed(1)}' cy='${pts[peak][1].toFixed(1)}' r='3.5' fill='${t.bg}' stroke='${t.line}' stroke-width='2' class='fade'/>
+<circle cx='${last[0].toFixed(1)}' cy='${last[1].toFixed(1)}' r='5' fill='${t.line}' class='pulse'/>
+<circle cx='${last[0].toFixed(1)}' cy='${last[1].toFixed(1)}' r='5' fill='${t.line}' stroke='${t.bg}' stroke-width='2'/>
+${monthLabels}
+
+${tileSvg}
+
+<text x='32' y='380' class='p' font-size='10.5' fill='${t.muted}'>lioner.hu · Kecskemét</text>
+<text x='${W - 32}' y='380' class='p' font-size='10.5' fill='${t.muted}' text-anchor='end'>frissítve: ${st.today}</text>
 </svg>
 `;
+}
+
+async function loadAssets() {
+    const b64 = async f => (await readFile(new URL(`../assets/fonts/${f}`, import.meta.url))).toString('base64');
+    return {
+        logo: await readFile(new URL('../assets/brand/lioner-logo-body.svg', import.meta.url), 'utf8'),
+        fonts: { Montserrat: await b64('Montserrat-Bold.woff2'), PoppinsB: await b64('Poppins-Bold.woff2'), Poppins: await b64('Poppins-Regular.woff2') },
+    };
 }
 
 async function updateReadme(posts) {
@@ -144,10 +206,10 @@ async function updateReadme(posts) {
     if (next !== readme) await writeFile(README, next);
 }
 
-const [calendar, posts] = await Promise.all([fetchDays(), fetchPosts().catch(() => [])]);
+const [calendar, posts, assets] = await Promise.all([fetchCalendar(), fetchPosts().catch(() => []), loadAssets()]);
 const st = stats(calendar);
 await mkdir(OUT_DIR, { recursive: true });
-await writeFile(`${OUT_DIR}/status-light.svg`, statusSvg(st, THEMES.light));
-await writeFile(`${OUT_DIR}/status-dark.svg`, statusSvg(st, THEMES.dark));
+await writeFile(`${OUT_DIR}/status-light.svg`, statusSvg(st, THEMES.light, assets));
+await writeFile(`${OUT_DIR}/status-dark.svg`, statusSvg(st, THEMES.dark, assets));
 if (posts.length) await updateReadme(posts);
 console.log(JSON.stringify({ total: st.total, last30: st.last30, activePct: st.activePct, longest: st.longest, posts: posts.length }));
