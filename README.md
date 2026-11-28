@@ -47,11 +47,11 @@ Nyilvános repóm kevés, mert szinte minden ügyfélrendszer, amin dolgozom, pr
 A Lioner blogjára írok, főleg arról, amibe az ügyfeleink belefutnak: mikor kell Excel helyett rendszer, mire figyelj fejlesztőválasztásnál, mit lehet kezdeni egy félbemaradt projekttel.
 
 <!-- BLOG:START -->
+- [Tud a Claude magyarul diktálni? Kipróbáltuk Desktopon és mobilon](https://lioner.hu/blog/claude-magyar-diktalas) · 2026. november 27.
+- [Biztonságos még a PHP? Veszélyben van a weboldalad?](https://lioner.hu/blog/biztonsagos-meg-a-php-veszelyben-van-a-weboldalad) · 2026. november 19.
 - [Mit tud egy fejlesztő, amit egy vibe coder nem?](https://lioner.hu/blog/vibe-coding-vagy-fejleszto) · 2026. november 1.
 - [Claude Dashboard lépésről lépésre: élő kimutatás a céges adataidból](https://lioner.hu/blog/claude-dashboard-beallitasa) · 2026. október 15.
 - [Munkaidő-nyilvántartás: mikor kell Excel helyett rendszer?](https://lioner.hu/blog/munkaido-nyilvantartas-excel-helyett-rendszer) · 2026. október 12.
-- [B2B webshop: miben más, mint egy hagyományos webáruház?](https://lioner.hu/blog/b2b-webshop-miben-mas) · 2026. október 9.
-- [Hogyan válassz webfejlesztőt? 11 szempont, amit ajánlatkérés előtt ellenőrizz](https://lioner.hu/blog/hogyan-valassz-webfejlesztot) · 2026. szeptember 21.
 <!-- BLOG:END -->
 
 Az összes cikkem: [lioner.hu/blog/szerzo/farkas-peter](https://lioner.hu/blog/szerzo/farkas-peter)
